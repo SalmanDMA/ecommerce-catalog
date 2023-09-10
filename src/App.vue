@@ -1,28 +1,59 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+ <div id="app">
+  <ProductDisplay v-if="shouldRenderProductDisplay" :nextProduct="nextProduct" :currentProduct="currentProduct" />
+  <ProductUnavailable v-else :nextProduct="nextProduct" />
+ </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import ProductUnavailable from './components/ProductUnavailable.vue';
+import ProductDisplay from './components/ProductDisplay.vue';
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+ name: 'App',
+ components: {
+  ProductUnavailable,
+  ProductDisplay,
+ },
+ data() {
+  return {
+   products: [],
+   currentIndex: 0,
+  };
+ },
+ computed: {
+  currentProduct() {
+   return this.products[this.currentIndex];
+  },
+  shouldRenderProductDisplay() {
+   return this.currentProduct && (this.currentProduct.category === "men's clothing" || this.currentProduct.category === "women's clothing");
+  },
+ },
+ methods: {
+  nextProduct() {
+   if (this.currentIndex < this.products.length - 1) {
+    this.currentIndex += 1;
+   } else {
+    // Kembali ke produk pertama jika sudah mencapai yang terakhir
+    this.currentIndex = 0;
+   }
+  },
+ },
+ mounted() {
+  // Lakukan permintaan HTTP untuk mengambil data produk
+  fetch('https://fakestoreapi.com/products')
+   .then((response) => response.json())
+   .then((data) => {
+    const dataProduct = data.filter((product) => product.category === "men's clothing" || product.category === "women's clothing");
+    this.products = dataProduct;
+   })
+   .catch((error) => {
+    console.error('Terjadi kesalahan dalam mengambil data produk:', error);
+   });
+ },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+@import './assets/styles/page.css';
+@import './assets/styles/page-unavailable.css';
 </style>
